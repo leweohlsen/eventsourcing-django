@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
+import os
+
 from django.db import models
 
+def prefix_db_table(name: str) -> str:
+    prefix = os.getenv("DJANGO_EVENTSOURCING_TABLES_PREFIX", None)
+    if prefix is None: return name
+    return f"{prefix.lower().rstrip('_')}_{name}"
 
 class StoredEventRecord(models.Model):
 
@@ -26,7 +32,7 @@ class StoredEventRecord(models.Model):
             ("application_name", "originator_id", "originator_version"),
             ("application_name", "id"),
         )
-        db_table = "stored_events"
+        db_table = prefix_db_table("stored_events")
 
 
 class SnapshotRecord(models.Model):
@@ -50,7 +56,7 @@ class SnapshotRecord(models.Model):
 
     class Meta:
         unique_together = (("application_name", "originator_id", "originator_version"),)
-        db_table = "snapshots"
+        db_table = prefix_db_table("snapshots")
 
 
 class NotificationTrackingRecord(models.Model):
@@ -74,4 +80,4 @@ class NotificationTrackingRecord(models.Model):
                 "notification_id",
             ),
         )
-        db_table = "notification_tracking"
+        db_table = prefix_db_table("notification_tracking")
